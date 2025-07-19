@@ -1,15 +1,20 @@
 package com.pragma.bootcamp.infraestructure.output.jpa.adapter;
 
 
+import com.pragma.bootcamp.domain.enumdata.SortBy;
+import com.pragma.bootcamp.domain.enumdata.SortOrder;
 import com.pragma.bootcamp.domain.model.Bootcamp;
+import com.pragma.bootcamp.domain.model.BootcampWithCount;
 import com.pragma.bootcamp.domain.model.web.Capability;
 import com.pragma.bootcamp.domain.model.web.Technology;
+import com.pragma.bootcamp.domain.pagination.PageRequestModel;
 import com.pragma.bootcamp.domain.spi.web.ICapabilityClientPort;
 import com.pragma.bootcamp.infraestructure.output.jpa.entity.BootcampCapabilityEntity;
 import com.pragma.bootcamp.infraestructure.output.jpa.entity.BootcampEntity;
 import com.pragma.bootcamp.infraestructure.output.jpa.mapper.IBootcampEntityMapper;
 import com.pragma.bootcamp.infraestructure.output.jpa.repository.IBootcampCapabilityRepository;
 import com.pragma.bootcamp.infraestructure.output.jpa.repository.IBootcampRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -24,7 +29,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class BootcampJpaAdapterTest {
@@ -43,14 +48,18 @@ class BootcampJpaAdapterTest {
     private final Bootcamp bootcamp = new Bootcamp(1L, "Boot", "Desc", LocalDateTime.now(), Duration.ofDays(5), List.of(new Capability(1L, "name", "desc",List.of(new Technology(1L,"A")))));
     private final BootcampEntity entity = new BootcampEntity(1L, "Boot", "Desc", LocalDateTime.now(), Duration.ofDays(5));
     private final BootcampCapabilityEntity capabilityEntity = new BootcampCapabilityEntity(1L, 1L, 1L);
-
+    @BeforeEach
+    void setup() {
+        when(bootcampEntityMapper.toModel(any())).thenReturn(bootcamp);
+        lenient().when(bootcampEntityMapper.toModel(any())).thenReturn(bootcamp);
+    }
     @Test
     void save_ShouldReturnSavedBootcamp() {
         when(bootcampEntityMapper.toEntity(bootcamp)).thenReturn(entity);
         when(bootcampRepository.save(entity)).thenReturn(Mono.just(entity));
         when(bootcampCapabilityRepository.deleteAllByBootcampId(1L)).thenReturn(Mono.empty());
         when(bootcampCapabilityRepository.save(any())).thenReturn(Mono.just(capabilityEntity));
-        when(capabilityClientPort.getCapabilityById(1L)).thenReturn(Mono.just(bootcamp.getCapabilities().get(0)));
+        when(capabilityClientPort.getCapabilityById(1L)).thenReturn(Mono.just(bootcamp.getCapabilities().getFirst()));
         when(bootcampEntityMapper.toModel(entity)).thenReturn(bootcamp);
 
         StepVerifier.create(bootcampJpaAdapter.save(bootcamp))
@@ -62,7 +71,7 @@ class BootcampJpaAdapterTest {
     void getBootcampById_ShouldReturnBootcamp() {
         when(bootcampRepository.findById(1L)).thenReturn(Mono.just(entity));
         when(bootcampCapabilityRepository.findAllByBootcampId(1L)).thenReturn(Flux.just(capabilityEntity));
-        when(capabilityClientPort.getCapabilityById(1L)).thenReturn(Mono.just(bootcamp.getCapabilities().get(0)));
+        when(capabilityClientPort.getCapabilityById(1L)).thenReturn(Mono.just(bootcamp.getCapabilities().getFirst()));
         when(bootcampEntityMapper.toModel(entity)).thenReturn(bootcamp);
 
         StepVerifier.create(bootcampJpaAdapter.getBootcampById(1L))
@@ -77,4 +86,100 @@ class BootcampJpaAdapterTest {
         StepVerifier.create(bootcampJpaAdapter.getBootcampById(1L))
                 .verifyComplete();
     }
+    @Test
+    void getBootcamps_NameAsc() {
+        BootcampWithCount projection = mock(BootcampWithCount.class);
+        when(projection.getId()).thenReturn(1L);
+        when(projection.getName()).thenReturn("Name");
+        when(projection.getDescription()).thenReturn("Desc");
+        when(projection.getDate()).thenReturn(LocalDateTime.now());
+        when(projection.getDuration()).thenReturn(3600L);
+
+        PageRequestModel request = new PageRequestModel(0, 10, SortOrder.ASC , SortBy.NAME);
+
+        when(bootcampRepository.count()).thenReturn(Mono.just(1L));
+        when(bootcampRepository.findPageOrderByNameAsc(10, 0L)).thenReturn(Flux.just(projection));
+        when(bootcampCapabilityRepository.findAllByBootcampId(1L)).thenReturn(Flux.just(new BootcampCapabilityEntity(1L, 1L, 1L)));
+        when(capabilityClientPort.getCapabilityById(1L)).thenReturn(Mono.just(bootcamp.getCapabilities().getFirst()));
+
+        StepVerifier.create(bootcampJpaAdapter.getBootcamps(request))
+                .expectNextMatches(result -> result.getContent().size() == 1 && result.getTotalElements() == 1L)
+                .verifyComplete();
+    }
+
+    @Test
+    void getBootcamps_NameDesc() {
+        BootcampWithCount projection = mock(BootcampWithCount.class);
+        when(projection.getId()).thenReturn(1L);
+        when(projection.getName()).thenReturn("Name");
+        when(projection.getDescription()).thenReturn("Desc");
+        when(projection.getDate()).thenReturn(LocalDateTime.now());
+        when(projection.getDuration()).thenReturn(3600L);
+
+        PageRequestModel request = new PageRequestModel(0, 10, SortOrder.DESC , SortBy.NAME);
+
+        when(bootcampRepository.count()).thenReturn(Mono.just(1L));
+        when(bootcampRepository.findPageOrderByNameDesc(10, 0L)).thenReturn(Flux.just(projection));
+        when(bootcampCapabilityRepository.findAllByBootcampId(1L)).thenReturn(Flux.just(new BootcampCapabilityEntity(1L, 1L, 1L)));
+        when(capabilityClientPort.getCapabilityById(1L)).thenReturn(Mono.just(bootcamp.getCapabilities().getFirst()));
+
+        StepVerifier.create(bootcampJpaAdapter.getBootcamps(request))
+                .expectNextMatches(result -> result.getContent().size() == 1)
+                .verifyComplete();
+    }
+
+    @Test
+    void getBootcamps_CapabilityCountAsc() {
+        BootcampWithCount projection = mock(BootcampWithCount.class);
+        when(projection.getId()).thenReturn(1L);
+        when(projection.getName()).thenReturn("Name");
+        when(projection.getDescription()).thenReturn("Desc");
+        when(projection.getDate()).thenReturn(LocalDateTime.now());
+        when(projection.getDuration()).thenReturn(3600L);
+
+        PageRequestModel request = new PageRequestModel(0, 10, SortOrder.ASC , SortBy.CAPABILITY_COUNT);
+
+        when(bootcampRepository.count()).thenReturn(Mono.just(1L));
+        when(bootcampRepository.findPageOrderByCountAsc(10, 0L)).thenReturn(Flux.just(projection));
+        when(bootcampCapabilityRepository.findAllByBootcampId(1L)).thenReturn(Flux.just(new BootcampCapabilityEntity(1L, 1L, 1L)));
+        when(capabilityClientPort.getCapabilityById(1L)).thenReturn(Mono.just(bootcamp.getCapabilities().getFirst()));
+
+        StepVerifier.create(bootcampJpaAdapter.getBootcamps(request))
+                .expectNextMatches(result -> result.getContent().size() == 1)
+                .verifyComplete();
+    }
+
+    @Test
+    void getBootcamps_CapabilityCountDesc_WithZeroDuration() {
+        BootcampWithCount projection = mock(BootcampWithCount.class);
+        when(projection.getId()).thenReturn(2L);
+        when(projection.getName()).thenReturn("Name2");
+        when(projection.getDescription()).thenReturn("Desc2");
+        when(projection.getDate()).thenReturn(LocalDateTime.now());
+        when(projection.getDuration()).thenReturn(0L);
+
+        PageRequestModel request = new PageRequestModel(0, 10,  SortOrder.DESC , SortBy.CAPABILITY_COUNT);
+
+        when(bootcampRepository.count()).thenReturn(Mono.just(1L));
+        when(bootcampRepository.findPageOrderByCountDesc(10, 0L)).thenReturn(Flux.just(projection));
+        when(bootcampCapabilityRepository.findAllByBootcampId(2L)).thenReturn(Flux.just(new BootcampCapabilityEntity(1L, 2L, 1L)));
+        when(capabilityClientPort.getCapabilityById(1L)).thenReturn(Mono.just(bootcamp.getCapabilities().getFirst()));
+
+        StepVerifier.create(bootcampJpaAdapter.getBootcamps(request))
+                .expectNextMatches(result -> result.getContent().size() == 1)
+                .verifyComplete();
+    }
+
+    @Test
+    void getBootcamps_EmptyResult() {
+        PageRequestModel request = new PageRequestModel(0, 10,  SortOrder.ASC , SortBy.NAME);
+
+        when(bootcampRepository.count()).thenReturn(Mono.just(0L));
+        when(bootcampRepository.findPageOrderByNameAsc(10, 0L)).thenReturn(Flux.empty());
+
+        StepVerifier.create(bootcampJpaAdapter.getBootcamps(request))
+                .expectNextMatches(result -> result.getContent().isEmpty() && result.getTotalElements() == 0L)
+                .verifyComplete();
+    }
 }
+

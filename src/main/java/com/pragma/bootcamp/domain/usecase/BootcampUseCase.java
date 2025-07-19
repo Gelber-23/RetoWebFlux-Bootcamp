@@ -5,6 +5,8 @@ import com.pragma.bootcamp.domain.exception.CapabilityNotFoundException;
 import com.pragma.bootcamp.domain.exception.InvalidBootcampException;
 import com.pragma.bootcamp.domain.model.Bootcamp;
 import com.pragma.bootcamp.domain.model.web.Capability;
+import com.pragma.bootcamp.domain.pagination.PageModel;
+import com.pragma.bootcamp.domain.pagination.PageRequestModel;
 import com.pragma.bootcamp.domain.spi.IBootcampPersistencePort;
 import com.pragma.bootcamp.domain.spi.web.ICapabilityClientPort;
 import com.pragma.bootcamp.domain.util.ExceptionConstans;
@@ -36,6 +38,11 @@ public class BootcampUseCase implements IBootcampServicePort {
     @Override
     public Mono<Bootcamp> getBootcampById(Long id) {
         return bootcampPersistencePort.getBootcampById(id);
+    }
+
+    @Override
+    public Mono<PageModel<Bootcamp>> getBootcamps(PageRequestModel pageRequest) {
+        return bootcampPersistencePort.getBootcamps(pageRequest);
     }
 
 

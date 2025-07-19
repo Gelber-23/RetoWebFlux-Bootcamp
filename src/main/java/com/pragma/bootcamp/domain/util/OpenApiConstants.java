@@ -27,4 +27,12 @@ public class OpenApiConstants {
 
     public static final String GET_ALL_BOOTCAMP_ORDER_DESCRIPTION="Order of results (ASC for ascending, DESC for descending)";
     public static final String GET_ALL_BOOTCAMP_SORT_BY_DESCRIPTION="Field by which the results are sorted";
+
+    //SCHEMA
+
+    public static final String BOOTCAMP_DATE_DESCRIPTION="Bootcamp start date and time in ISO‑8601 format";
+    public static final String BOOTCAMP_DATE_EXAMPLE="2025-07-20T14:30:00";
+
+    public static final String BOOTCAMP_DURATION_DESCRIPTION="Total bootcamp duration using ISO‑8601 format for `java.time.Duration`";
+    public static final String BOOTCAMP_DURATION_EXAMPLE="PT6H30M";
 }
