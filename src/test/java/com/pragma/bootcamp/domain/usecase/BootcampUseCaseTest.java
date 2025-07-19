@@ -1,10 +1,14 @@
 package com.pragma.bootcamp.domain.usecase;
 
+import com.pragma.bootcamp.domain.enumdata.SortBy;
+import com.pragma.bootcamp.domain.enumdata.SortOrder;
 import com.pragma.bootcamp.domain.exception.CapabilityNotFoundException;
 import com.pragma.bootcamp.domain.exception.InvalidBootcampException;
 import com.pragma.bootcamp.domain.model.Bootcamp;
 import com.pragma.bootcamp.domain.model.web.Capability;
 import com.pragma.bootcamp.domain.model.web.Technology;
+import com.pragma.bootcamp.domain.pagination.PageModel;
+import com.pragma.bootcamp.domain.pagination.PageRequestModel;
 import com.pragma.bootcamp.domain.spi.IBootcampPersistencePort;
 import com.pragma.bootcamp.domain.spi.web.ICapabilityClientPort;
 import org.junit.jupiter.api.BeforeEach;
@@ -81,6 +85,17 @@ class BootcampUseCaseTest {
         when(bootcampPersistencePort.getBootcampById(1L)).thenReturn(Mono.just(validBootcamp));
         StepVerifier.create(bootcampUseCase.getBootcampById(1L))
                 .expectNext(validBootcamp)
+                .verifyComplete();
+    }
+    @Test
+    void getBootcamps_ShouldReturnPageModel() {
+        PageRequestModel request = new PageRequestModel(0, 10,  SortOrder.ASC,SortBy.NAME);
+        PageModel<Bootcamp> page = new PageModel<>(List.of(), 0L, 0, 10);
+
+        when(bootcampPersistencePort.getBootcamps(request)).thenReturn(Mono.just(page));
+
+        StepVerifier.create(bootcampUseCase.getBootcamps(request))
+                .expectNext(page)
                 .verifyComplete();
     }
 }
