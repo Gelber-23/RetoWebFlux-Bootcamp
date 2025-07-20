@@ -6,5 +6,5 @@ import reactor.core.publisher.Mono;
 public interface ICapabilityClientPort {
 
     Mono<Capability> getCapabilityById(Long id);
-
+    Mono<Void> deleteCapabilityById(Long id);
 }

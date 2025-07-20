@@ -7,6 +7,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.convert.CustomConversions;
 import org.springframework.data.r2dbc.config.AbstractR2dbcConfiguration;
 import org.springframework.data.r2dbc.convert.R2dbcCustomConversions;
+import org.springframework.r2dbc.connection.R2dbcTransactionManager;
+import org.springframework.transaction.reactive.TransactionalOperator;
 
 import java.util.List;
 @Configuration
@@ -31,5 +33,16 @@ public class R2dbcConfig extends AbstractR2dbcConfiguration {
                         new DurationConverters.SecondsToDurationConverter()
                 )
         );
+    }
+
+
+    @Bean
+    R2dbcTransactionManager transactionManager(ConnectionFactory cf) {
+        return new R2dbcTransactionManager(cf);
+    }
+
+    @Bean
+    TransactionalOperator transactionalOperator(R2dbcTransactionManager txManager) {
+        return TransactionalOperator.create(txManager);
     }
 }

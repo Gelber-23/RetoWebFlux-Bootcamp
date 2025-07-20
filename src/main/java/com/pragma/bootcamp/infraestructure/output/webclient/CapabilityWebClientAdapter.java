@@ -28,4 +28,19 @@ public class CapabilityWebClientAdapter  implements ICapabilityClientPort {
                         .bodyToMono(Capability.class);
 
     }
+
+    @Override
+    public Mono<Void> deleteCapabilityById(Long id) {
+        return webClient
+                .delete()
+                .uri("/" + id)
+                .exchangeToMono(response -> {
+                    if (response.statusCode().is2xxSuccessful()) {
+                        return Mono.empty();
+                    } else {
+                        return response.createException().flatMap(Mono::error);
+                    }
+                });
+
+    }
 }

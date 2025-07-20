@@ -45,6 +45,11 @@ public class BootcampUseCase implements IBootcampServicePort {
         return bootcampPersistencePort.getBootcamps(pageRequest);
     }
 
+    @Override
+    public Mono<Void> deleteBootcamp(Long id) {
+        return bootcampPersistencePort.deleteBootcamp(id);
+    }
+
 
     private Mono<Bootcamp> validateData(Bootcamp bootcamp) {
         List<Capability> capabilities = bootcamp.getCapabilities();

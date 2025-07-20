@@ -77,5 +77,16 @@ public class BootcampRestController {
         return bootcampHandler.getBootcamps(new PageRequest(page, size, order, sortBy));
     }
 
+    @Operation(summary = OpenApiConstants.DELETE_BOOTCAMP_TITLE)
+    @ApiResponses(value = {
+            @ApiResponse(responseCode =  OpenApiConstants.RESPONSE_CODE_200, description = OpenApiConstants.DELETE_BOOTCAMP_MESSAGE, content = @Content),
+            @ApiResponse(responseCode = OpenApiConstants.RESPONSE_CODE_404, description =  OpenApiConstants.NO_DATA_MESSAGE , content = @Content)
+    })
+    @DeleteMapping("/{id}")
+
+    public Mono<Void> deleteBootcamp(@PathVariable(value = "id")long id){
+
+        return bootcampHandler.deleteBootcamp( id) ;
+    }
 
 }

@@ -16,6 +16,7 @@ import com.pragma.bootcamp.infraestructure.output.jpa.repository.IBootcampCapabi
 import com.pragma.bootcamp.infraestructure.output.jpa.repository.IBootcampRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.reactive.TransactionalOperator;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -31,7 +32,7 @@ public class BootcampJpaAdapter implements IBootcampPersistencePort {
 
     private final IBootcampEntityMapper bootcampEntityMapper;
     private final ICapabilityClientPort capabilityClientPort;
-
+    private final TransactionalOperator transactionalOperator;
     @Override
     @Transactional
     public Mono<Bootcamp> save(Bootcamp bootcamp) {
@@ -136,4 +137,38 @@ public class BootcampJpaAdapter implements IBootcampPersistencePort {
                     return new PageModel<>(caps, tot, page, size);
                 });
     }
+    @Override
+    public Mono<Void> deleteBootcamp(Long bootcampId) {
+
+        return bootcampCapabilityRepository.findAllByBootcampId(bootcampId)
+                .map(BootcampCapabilityEntity::getCapabilityId)
+                .collectList()
+                .flatMap(capIds ->
+
+                        Flux.fromIterable(capIds)
+                                .flatMap(capId ->
+                                        bootcampCapabilityRepository.findAllByCapabilityId(capId)
+                                                .count()
+                                                .filter(count -> count == 1)
+                                                .map(ids -> capId)
+                                )
+                                .collectList()
+                                .flatMap(capIdsToDelete ->
+
+                                        transactionalOperator.execute(status ->
+                                                        bootcampRepository.deleteById(bootcampId)
+                                                )
+                                                .then(
+
+                                                        Flux.fromIterable(capIdsToDelete)
+                                                                .flatMap(capabilityClientPort::deleteCapabilityById)
+                                                                .then()
+                                                )
+                                )
+                );
+    }
+
+
+
+
 }
