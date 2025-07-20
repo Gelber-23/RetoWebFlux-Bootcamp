@@ -27,7 +27,8 @@ public class OpenApiConstants {
 
     public static final String GET_ALL_BOOTCAMP_ORDER_DESCRIPTION="Order of results (ASC for ascending, DESC for descending)";
     public static final String GET_ALL_BOOTCAMP_SORT_BY_DESCRIPTION="Field by which the results are sorted";
-
+    public static final String DELETE_BOOTCAMP_TITLE = "Delete bootcamp by ID";
+    public static final String DELETE_BOOTCAMP_MESSAGE = "Bootcamp deleted";
     //SCHEMA
 
     public static final String BOOTCAMP_DATE_DESCRIPTION="Bootcamp start date and time in ISO‑8601 format";

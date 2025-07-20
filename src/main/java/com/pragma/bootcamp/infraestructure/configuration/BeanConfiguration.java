@@ -11,6 +11,7 @@ import com.pragma.bootcamp.infraestructure.output.webclient.CapabilityWebClientA
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.transaction.reactive.TransactionalOperator;
 
 @Configuration
 @RequiredArgsConstructor
@@ -20,10 +21,10 @@ public class BeanConfiguration {
     private final IBootcampEntityMapper bootcampEntityMapper;
     private final IBootcampCapabilityRepository bootcampCapabilityRepository;
     private final CapabilityWebClientAdapter capabilityWebClientAdapter;
-
+    private final TransactionalOperator transactionalOperator;
     @Bean
     public IBootcampPersistencePort bootcampPersistencePort(){
-        return new BootcampJpaAdapter(bootcampRepository, bootcampCapabilityRepository, bootcampEntityMapper,capabilityWebClientAdapter);
+        return new BootcampJpaAdapter(bootcampRepository, bootcampCapabilityRepository, bootcampEntityMapper,capabilityWebClientAdapter,transactionalOperator);
     }
 
     @Bean

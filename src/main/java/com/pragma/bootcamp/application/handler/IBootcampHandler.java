@@ -10,4 +10,5 @@ public interface IBootcampHandler {
     Mono<BootcampResponse> createBootcamp(BootcampRequest cap);
     Mono<BootcampResponse> getBootcampById(Long id);
     Mono<PageResponse<BootcampResponse>> getBootcamps(PageRequest pageRequest);
+    Mono<Void> deleteBootcamp(Long id);
 }

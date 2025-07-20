@@ -10,4 +10,5 @@ public interface IBootcampServicePort {
     Mono<Bootcamp> createBootcamp(Bootcamp cap);
     Mono<Bootcamp> getBootcampById(Long id);
     Mono<PageModel<Bootcamp>> getBootcamps(PageRequestModel pageRequest);
+    Mono<Void> deleteBootcamp(Long id);
 }

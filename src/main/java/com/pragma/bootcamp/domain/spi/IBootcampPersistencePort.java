@@ -10,4 +10,5 @@ public interface IBootcampPersistencePort {
     Mono<Bootcamp> save(Bootcamp bootcamp);
     Mono<Bootcamp> getBootcampById(Long id);
     Mono<PageModel<Bootcamp>> getBootcamps(PageRequestModel pageRequest);
+    Mono<Void> deleteBootcamp(Long id);
 }

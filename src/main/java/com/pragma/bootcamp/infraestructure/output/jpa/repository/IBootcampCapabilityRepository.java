@@ -8,4 +8,5 @@ import reactor.core.publisher.Mono;
 public interface IBootcampCapabilityRepository extends ReactiveCrudRepository<BootcampCapabilityEntity, Long> {
     Flux<BootcampCapabilityEntity> findAllByBootcampId(Long bootcampId);
     Mono<Void> deleteAllByBootcampId(Long bootcampId);
+    Flux<BootcampCapabilityEntity> findAllByCapabilityId(Long capabilityId);
 }
