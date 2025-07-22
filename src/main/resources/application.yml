@@ -13,3 +13,4 @@ appDescription: "Bootcamp System"
 appVersion: "1.0"
 client:
   capability: "http://localhost:8081/capability"
+  person: "http://localhost:8083/person"

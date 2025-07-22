@@ -13,7 +13,7 @@ public class ExceptionConstans {
     public static final String BOOTCAMP_DESCRIPTION_REQUIRED = "Description must not be empty";
     public static final String BOOTCAMP_DATE_REQUIRED= "Date must not be empty";
     public static final String BOOTCAMP_DURATION_REQUIRED= "Duration must not be empty";
-
+    public static final String BOOTCAMP_HAS_SUBSCRIBERS= "You can't eliminate bootcamp %s because it has %s subscribers";
 
     public static final String VALUE_NOT_IN_ENUM ="%s Invalid parameter '%s': '%s'. Allowed values: [%s]";
 

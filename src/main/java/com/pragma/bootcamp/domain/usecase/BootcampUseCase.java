@@ -1,6 +1,7 @@
 package com.pragma.bootcamp.domain.usecase;
 
 import com.pragma.bootcamp.domain.api.IBootcampServicePort;
+import com.pragma.bootcamp.domain.exception.BootcampHasSubscribersException;
 import com.pragma.bootcamp.domain.exception.CapabilityNotFoundException;
 import com.pragma.bootcamp.domain.exception.InvalidBootcampException;
 import com.pragma.bootcamp.domain.model.Bootcamp;
@@ -9,6 +10,7 @@ import com.pragma.bootcamp.domain.pagination.PageModel;
 import com.pragma.bootcamp.domain.pagination.PageRequestModel;
 import com.pragma.bootcamp.domain.spi.IBootcampPersistencePort;
 import com.pragma.bootcamp.domain.spi.web.ICapabilityClientPort;
+import com.pragma.bootcamp.domain.spi.web.IPersonClientPort;
 import com.pragma.bootcamp.domain.util.ExceptionConstans;
 import com.pragma.bootcamp.domain.util.ValueConstants;
 import reactor.core.publisher.Flux;
@@ -22,10 +24,12 @@ public class BootcampUseCase implements IBootcampServicePort {
 
     private final IBootcampPersistencePort bootcampPersistencePort;
     private final ICapabilityClientPort capabilityClientPort;
+    private final IPersonClientPort personClientPort;
 
-    public BootcampUseCase(IBootcampPersistencePort bootcampPersistencePort, ICapabilityClientPort capabilityClientPort) {
+    public BootcampUseCase(IBootcampPersistencePort bootcampPersistencePort, ICapabilityClientPort capabilityClientPort, IPersonClientPort personClientPort) {
         this.bootcampPersistencePort = bootcampPersistencePort;
         this.capabilityClientPort = capabilityClientPort;
+        this.personClientPort = personClientPort;
     }
 
     @Override
@@ -47,7 +51,7 @@ public class BootcampUseCase implements IBootcampServicePort {
 
     @Override
     public Mono<Void> deleteBootcamp(Long id) {
-        return bootcampPersistencePort.deleteBootcamp(id);
+        return validateNotSubscriberBootcamp(id).then(bootcampPersistencePort.deleteBootcamp(id));
     }
 
 
@@ -93,5 +97,15 @@ public class BootcampUseCase implements IBootcampServicePort {
 
 
     }
-
+    private Mono<Void> validateNotSubscriberBootcamp (Long id){
+        return personClientPort.countByBootcampId(id)
+                .flatMap(count -> {
+                    if (count > 0) {
+                        return Mono.error(new BootcampHasSubscribersException(
+                                String.format(ExceptionConstans.BOOTCAMP_HAS_SUBSCRIBERS, id,count)
+                              ));
+                    }
+                    return Mono.empty();
+                });
+    }
 }

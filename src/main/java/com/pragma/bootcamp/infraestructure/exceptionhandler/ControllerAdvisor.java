@@ -1,6 +1,7 @@
 package com.pragma.bootcamp.infraestructure.exceptionhandler;
 
 
+import com.pragma.bootcamp.domain.exception.BootcampHasSubscribersException;
 import com.pragma.bootcamp.domain.exception.CapabilityNotFoundException;
 import com.pragma.bootcamp.domain.exception.InvalidBootcampException;
 import com.pragma.bootcamp.domain.util.ExceptionConstans;
@@ -28,6 +29,15 @@ public class ControllerAdvisor {
 
     @ExceptionHandler(InvalidBootcampException.class)
     public ResponseEntity<Map<String, Object>> handleTechnologyValidation(InvalidBootcampException ex) {
+        HttpStatus status = HttpStatus.BAD_REQUEST;
+        return ResponseEntity.status(status)
+                .body(Map.of(
+                        STATUS, status.value(),
+                        MESSAGE, ex.getMessage()
+                ));
+    }
+    @ExceptionHandler(BootcampHasSubscribersException.class)
+    public ResponseEntity<Map<String, Object>> handleBootcampHasSubscriber(BootcampHasSubscribersException ex) {
         HttpStatus status = HttpStatus.BAD_REQUEST;
         return ResponseEntity.status(status)
                 .body(Map.of(
