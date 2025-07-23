@@ -1,6 +1,5 @@
 package com.pragma.bootcamp.infraestructure.output.webclient;
 
-import com.pragma.bootcamp.domain.model.web.Capability;
 import com.pragma.bootcamp.domain.spi.web.IPersonClientPort;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;

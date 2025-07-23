@@ -5,12 +5,14 @@ import com.pragma.bootcamp.domain.exception.BootcampHasSubscribersException;
 import com.pragma.bootcamp.domain.exception.CapabilityNotFoundException;
 import com.pragma.bootcamp.domain.exception.InvalidBootcampException;
 import com.pragma.bootcamp.domain.model.Bootcamp;
+import com.pragma.bootcamp.domain.model.web.BootcampReport;
 import com.pragma.bootcamp.domain.model.web.Capability;
 import com.pragma.bootcamp.domain.pagination.PageModel;
 import com.pragma.bootcamp.domain.pagination.PageRequestModel;
 import com.pragma.bootcamp.domain.spi.IBootcampPersistencePort;
 import com.pragma.bootcamp.domain.spi.web.ICapabilityClientPort;
 import com.pragma.bootcamp.domain.spi.web.IPersonClientPort;
+import com.pragma.bootcamp.domain.spi.web.IReportClientPort;
 import com.pragma.bootcamp.domain.util.ExceptionConstans;
 import com.pragma.bootcamp.domain.util.ValueConstants;
 import reactor.core.publisher.Flux;
@@ -25,18 +27,27 @@ public class BootcampUseCase implements IBootcampServicePort {
     private final IBootcampPersistencePort bootcampPersistencePort;
     private final ICapabilityClientPort capabilityClientPort;
     private final IPersonClientPort personClientPort;
+    private final IReportClientPort reportClientPort;
 
-    public BootcampUseCase(IBootcampPersistencePort bootcampPersistencePort, ICapabilityClientPort capabilityClientPort, IPersonClientPort personClientPort) {
+    public BootcampUseCase(IBootcampPersistencePort bootcampPersistencePort, ICapabilityClientPort capabilityClientPort, IPersonClientPort personClientPort, IReportClientPort reportClientPort) {
         this.bootcampPersistencePort = bootcampPersistencePort;
         this.capabilityClientPort = capabilityClientPort;
         this.personClientPort = personClientPort;
+        this.reportClientPort = reportClientPort;
     }
 
     @Override
     public Mono<Bootcamp> createBootcamp(Bootcamp cap) {
         return validateData(cap)
                 .flatMap(this::validateCapabilities)
-                .flatMap(bootcampPersistencePort::save);
+                .flatMap(bootcampPersistencePort::save)
+                .doOnSuccess(
+                        saved -> {
+                            BootcampReport evt = mapToReport(saved);
+
+                            reportClientPort.createDatBootcampReport(evt).subscribe();
+                        }
+                );
     }
 
     @Override
@@ -62,7 +73,7 @@ public class BootcampUseCase implements IBootcampServicePort {
         if (bootcamp.getName() == null || bootcamp.getName().isBlank()) {
             errors.add(ExceptionConstans.BOOTCAMP_NAME_REQUIRED);
         }
-       
+
         if (bootcamp.getDescription() == null || bootcamp.getDescription().isBlank()) {
             errors.add(ExceptionConstans.BOOTCAMP_DESCRIPTION_REQUIRED);
         }
@@ -107,5 +118,23 @@ public class BootcampUseCase implements IBootcampServicePort {
                     }
                     return Mono.empty();
                 });
+    }
+
+    private BootcampReport mapToReport(Bootcamp b) {
+        BootcampReport r = new BootcampReport();
+        r.setBootcampId(b.getId());
+        r.setName(b.getName());
+        r.setDescription(b.getDescription());
+        r.setDate(b.getDate());
+        r.setDuration(b.getDuration());
+        r.setCapabilityCount(b.getCapabilities().size());
+        r.setTechnologyCount(
+                b.getCapabilities().stream()
+                        .mapToLong(c -> c.getTechnologies().size())
+                        .sum()
+        );
+        r.setCapabilities(b.getCapabilities());
+        r.setPersonCount(0);
+        return r;
     }
 }

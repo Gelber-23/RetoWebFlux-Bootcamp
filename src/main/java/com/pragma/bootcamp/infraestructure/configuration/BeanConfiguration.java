@@ -9,6 +9,7 @@ import com.pragma.bootcamp.infraestructure.output.jpa.repository.IBootcampCapabi
 import com.pragma.bootcamp.infraestructure.output.jpa.repository.IBootcampRepository;
 import com.pragma.bootcamp.infraestructure.output.webclient.CapabilityWebClientAdapter;
 import com.pragma.bootcamp.infraestructure.output.webclient.PersonWebClientAdapter;
+import com.pragma.bootcamp.infraestructure.output.webclient.ReportWebClientAdapter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,6 +24,7 @@ public class BeanConfiguration {
     private final IBootcampCapabilityRepository bootcampCapabilityRepository;
     private final CapabilityWebClientAdapter capabilityWebClientAdapter;
     private final PersonWebClientAdapter personWebClientAdapter;
+    private final ReportWebClientAdapter reportWebClientAdapter;
     private final TransactionalOperator transactionalOperator;
     @Bean
     public IBootcampPersistencePort bootcampPersistencePort(){
@@ -31,6 +33,6 @@ public class BeanConfiguration {
 
     @Bean
     public IBootcampServicePort bootcampServicePort(){
-        return new BootcampUseCase(bootcampPersistencePort(),capabilityWebClientAdapter,personWebClientAdapter);
+        return new BootcampUseCase(bootcampPersistencePort(),capabilityWebClientAdapter,personWebClientAdapter,reportWebClientAdapter);
     }
 }
